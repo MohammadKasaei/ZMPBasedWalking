@@ -2,6 +2,11 @@
 
 This project implements a real-time bipedal walking engine for a humanoid robot simulated in [PyBullet](https://github.com/bulletphysics/bullet3). The system includes trajectory generation, inverse kinematics, basic balance control, and interactive keyboard-based teleoperation.
 
+
+<div align="center">
+  <img src="imgs/video.gif" alt="Image description" width="800">
+</div>
+
 ## Features
 
 - Realistic walking pattern generation using step parameters

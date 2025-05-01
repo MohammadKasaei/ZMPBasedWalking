@@ -19,7 +19,6 @@ class RobotControl():
         p.setGravity(0,0,-9.81)
         p.setAdditionalSearchPath(pd.getDataPath())
         self.sampling_time = 0.005
-
         p.setTimeStep(self.sampling_time)
         
         self.FloorId = p.loadURDF("plane.urdf",[0,0,0])
@@ -84,9 +83,9 @@ class RobotControl():
         LShZ = deg2rad(0)
         LEB = deg2rad(-70)
         
-        self.Zleg = -0.375
+        self.z_leg = -0.375
 
-        JPR = self.IK([0,0,self.Zleg,0])
+        JPR = self.IK([0,0,self.z_leg,0])
         RHipX = -JPR[0]
         RHipY = JPR[1]
         RHipZ = JPR[2]
@@ -95,7 +94,7 @@ class RobotControl():
         RAnkleY = JPR[5]
 
 
-        JPL = self.IK([0,0,self.Zleg,0])
+        JPL = self.IK([0,0,self.z_leg,0])
         LHipX = -JPL[0]
         LHipY = JPL[1]
         LHipZ = JPL[2]
@@ -104,8 +103,8 @@ class RobotControl():
         LAnkleY = JPL[5]
 
         
-        RfootPosition = [0,0,self.Zleg,0]
-        LfootPosition = [0,0,self.Zleg,0]
+        RfootPosition = [0,0,self.z_leg,0]
+        LfootPosition = [0,0,self.z_leg,0]
         self.JointPos = self.update_joint_pos(RfootPosition,LfootPosition,(0,0),(0,0))
         
         self.JointPosions = [WaistX,WaistY,WaistZ,
