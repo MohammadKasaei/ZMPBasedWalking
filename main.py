@@ -16,12 +16,12 @@ sampling_time= robot_control.sampling_time
 foot_heel_toe=0
 distance_between_feet = 0.1
 z_leg = 0.38
-number_of_step=3
+number_of_step = 5
 step_time = 0.33
 
-step_x = 0.0
+step_x = 0.01
 step_y =0.0
-step_z = 0.03
+step_z = 0.04
 step_theta = 0.
 
 stop_for_one_step =  1
@@ -45,7 +45,8 @@ walking = GenerateWalkingTrajectories(FR0X,FR0Y,FL0X,FL0Y,
                                       step_x,step_y,step_z,
                                       step_time,sampling_time,
                                       first_step_is_right,
-                                      z_leg,z_offset=-0.02)
+                                      distance_between_feet=distance_between_feet,
+                                      z_leg = z_leg,z_offset=0.0)
 walking.generate()
 
 
@@ -63,12 +64,12 @@ while (not keyboard_monitoring.exit):
     p.stepSimulation()
     g_time = g_time + sampling_time
     
-    if (g_time-t_walk0 >= 2*step_time - sampling_time):
+    if (g_time - t_walk0 >= 2 * step_time - sampling_time):
         t_walk0 = g_time
-        step_x = (0.6*step_x) + (0.4*keyboard_monitoring.new_step_x)
-        step_y = (0.6*step_y) + (0.4*keyboard_monitoring.new_step_y)
-        step_theta = (0.6*step_theta) + (0.4*keyboard_monitoring.new_step_theta)
-        step_time = (0.6*step_time) + (0.4*keyboard_monitoring.new_step_time)
+        step_x = (0.8*step_x) + (0.2*keyboard_monitoring.new_step_x)
+        step_y = (0.8*step_y) + (0.2*keyboard_monitoring.new_step_y)
+        step_theta = (0.8*step_theta) + (0.2*keyboard_monitoring.new_step_theta)
+        step_time = (0.8*step_time) + (0.2*keyboard_monitoring.new_step_time)
         
         if (keyboard_monitoring.stop == 1):
             stop_for_one_step = 1
@@ -111,9 +112,8 @@ while (not keyboard_monitoring.exit):
         walking.init_walking(FR0X,FR0Y,FL0X,FL0Y,
                                 step_x_rotated,step_y_rotated,step_z,
                                 step_time,sampling_time,
-                                first_step_is_right,z_leg,z_offset=0.0)
-        walking.generate()  
-        
+                                first_step_is_right,distance_between_feet,z_leg,z_offset=0.0)
+        walking.generate()
 
     else:
         t_walk = g_time - t_walk0
@@ -128,7 +128,7 @@ while (not keyboard_monitoring.exit):
             
         elif (idx >= 0 and idx < len(walking.left_leg_x)):
             
-            arm_amp = math.radians(5)
+            arm_amp = math.radians(0)
             arm_offset = 20 
             arms_joint_pos,right_theta,left_theta = robot_control.generate_arm_motions(first_step_is_right,
                                                                 arm_amp,arm_offset,
@@ -138,9 +138,10 @@ while (not keyboard_monitoring.exit):
             
             waste_balance_ctrl_cmd, ankle_x_balance_ctrl_cmd, ankle_y_balance_ctrl_cmd =robot_control.balance_control(ori,CoP_L,CoP_R)
             
-            right_foot_pos = [walking.right_leg_x[idx], walking.right_leg_y[idx]+distance_between_feet/2,walking.right_leg_z[idx],0*right_theta]
-            left_foot_pos = [walking.left_leg_x[idx],walking.left_leg_y[idx]-distance_between_feet/2,walking.left_leg_z[idx],0*left_theta]
+            right_foot_pos = [walking.right_leg_x[idx], walking.right_leg_y[idx]+(distance_between_feet/2),walking.right_leg_z[idx],1*right_theta]
+            left_foot_pos = [walking.left_leg_x[idx],walking.left_leg_y[idx]-(distance_between_feet/2),walking.left_leg_z[idx],1*left_theta]
             legs_joint_pos = robot_control.update_joint_pos(right_foot_pos, left_foot_pos,ankle_x_balance_ctrl_cmd,ankle_y_balance_ctrl_cmd)
+            
             
 
         robot_control.update_legs_motors(legs_joint_pos)
@@ -164,4 +165,3 @@ while (not keyboard_monitoring.exit):
 
 p.disconnect()
 keyboard_monitoring.inputThread.stop()
-

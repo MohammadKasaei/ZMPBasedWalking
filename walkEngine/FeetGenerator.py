@@ -1,193 +1,128 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Mon Jun 22 14:51:52 2020
-
-@author: mohammad
-"""
-import numpy
-import math
-import statistics
-
-
-class FeetGenerator:
-
-    def __init__(self):
-        self.right_x  = []
-        self.right_y  = []
-        self.right_z  = []
-    
-        self.left_x  = []
-        self.left_y  = []
-        self.left_z  = []
-
+import matplotlib.pyplot as plt
+from typing import List, Tuple
         
-    def generate(self,step_x,step_y,step_z,step_time,sampling_time,number_of_step,zmp_x,zmp_y,FR0X,FR0Y,FL0X,FL0Y,first_step_is_right,smooth_height_index):
+class FootPositionGenerator:
+    def __init__(self, right_foot_steps, left_foot_steps, support_steps, step_time, sampling_time, foot_clearance=0.05):
+        self.right_foot_steps = right_foot_steps
+        self.left_foot_steps = left_foot_steps
+        self.support_steps = support_steps
+        self.step_time = step_time
+        self.sampling_time = sampling_time
+        self.foot_clearance = foot_clearance
 
-            t = 0
-            index =0
-            right_is_moving = first_step_is_right
-            
-            tf_simulation = (number_of_step)*step_time    
-            for global_time in numpy.arange(0,tf_simulation,sampling_time):
-                if (global_time==0 or t > step_time-(sampling_time) ):           
-                    if (index==0):
-                        right_is_moving = first_step_is_right
-                        if (first_step_is_right):
-                            x_p = FR0X 
-                            y_p = FR0Y
-                        else:
-                            x_p = FL0X 
-                            y_p = FL0Y
-                        
-                    else:
-                        if (right_is_moving):
-                            right_is_moving = 0
-                        else:
-                            right_is_moving = 1
-                        
-                        x_p = ZMP_X
-                        y_p = ZMP_Y
-                    
-                    l = int(index*round(step_time/sampling_time))
-                    ZMP_X = statistics.mean(zmp_x[ l:l+int(round(0.1*step_time/sampling_time))]); 
-                    ZMP_Y = statistics.mean(zmp_y[l:l+int(round(0.1*step_time/sampling_time))]); 
-                    
-                    index=index+1
-                    t = 0    
-                else:
-                    t = t + sampling_time
-                
-                
-                #ZMP = [ZMPX ,ZMPY , 0];    
-                zmp_z = 0
-                t0 = 0.
-                if (smooth_height_index>1 and index<smooth_height_index):
-                    if (t<t0):
-                        swing_x = x_p+(step_x*(t/(step_time)))
-                        swing_y = y_p+(step_y*(t/step_time))
-                        swing_z = 0*(index/smooth_height_index)*step_z*(math.sin(math.pi*t/step_time))        
-                    else:
-                        swing_x = x_p+(step_x*(t/(step_time)))
-                        swing_y = y_p+(step_y*(t/step_time))
-                        swing_z = (index/smooth_height_index)*step_z*(math.sin(math.pi*(t-t0)/(step_time-t0)))        
-                else:
-                    if (t<t0):            
-                        swing_x = x_p+(step_x*(t/(step_time)))
-                        swing_y = y_p+(step_y*(t/step_time))
-                        swing_z = 0        
-                    else:
-                         swing_x = x_p+(step_x*(t/(step_time)))
-                         swing_y = y_p+(step_y*(t/step_time))
-                         swing_z = step_z*(math.sin(math.pi*(t-t0)/(step_time-t0)));
-                    
-                
-                
-                
-                #swing = [swing; SWING ];
-                
-                if (right_is_moving):    
-                   self.right_x.append(swing_x)
-                   self.right_y.append(swing_y)
-                   self.right_z.append(swing_z)
-                   
-                   self.left_x.append(ZMP_X)
-                   self.left_y.append(ZMP_Y)
-                   self.left_z.append(zmp_z)
-                else:
-                   self.left_x.append(swing_x)
-                   self.left_y.append(swing_y)
-                   self.left_z.append(swing_z)
-                   
-                   self.right_x.append(ZMP_X)
-                   self.right_y.append(ZMP_Y)
-                   self.right_z.append(zmp_z)
-            
-            
-            
-#
-#
-#SamplingTime=0.01
-#StepTime=1
-#
-#FootHeelToe=0
-#DistanceBetweenFeet=0.2
-#
-#NumberOfStep=10
-#StepX=0.1
-#StepY=0.1
-#SwingStepZ =0.04
-#
-#FirstStepIsRight=1
-#DSRatio=0.
-#CoMHeightAmp = 0
-#Z0 = 1
-#NewZMPGenerator=0
-#SmoothHeightIndex=0
-#
-###
-#FR0X=-StepX/2
-#FR0Y=DistanceBetweenFeet/2
-#FL0X=0
-#FL0Y=-DistanceBetweenFeet/2
-#
-#COM_X0 = (FR0X+FL0X)/2;
-#COM_Y0 = (FR0Y+FL0Y)/2;
-#
-##%% FootStep planner
-#FP = FootStepPlanner(FR0X,FR0Y,FL0X,FL0Y,DistanceBetweenFeet)
-#FP.PlanSteps(NumberOfStep,StepX,StepY,FirstStepIsRight)
-#
-##%% ZMP Generator     
-#ZMP = ZMPGenerator()
-#ZMP.Generate(FP.SupportPositionsX,FP.SupportPositionsY,FootHeelToe,StepTime,DSRatio,SamplingTime)
-#
-##%% COM Generator
-#COM = COMGenerator()
-#COM.Generate(COM_X0,COM_Y0,FP.SupportPositionsX,FP.SupportPositionsY,ZMP.zmp_x,ZMP.zmp_y,StepTime,SamplingTime,NumberOfStep,DSRatio,CoMHeightAmp,Z0)
-#
-#
-##%% FeetGenerator
-#FT = FeetGenerator()
-#FT.Generate(StepX,StepY,SwingStepZ,StepTime,SamplingTime,NumberOfStep,ZMP.zmp_x,ZMP.zmp_y,FR0X,FR0Y,FL0X,FL0Y,FirstStepIsRight,SmoothHeightIndex)
-##%% plotting
-#time = numpy.arange(0,NumberOfStep*StepTime,SamplingTime)
-#time2 = numpy.arange(0,(NumberOfStep-1)*StepTime,SamplingTime)
-#
-#fig = plt.figure()
-#plt.plot(FP.SupportPositionsX,FP.SupportPositionsY,'o--',label='FootSteps')
-#plt.legend()
-#plt.grid(True)
-#
-#fig = plt.figure()
-#ax1 = fig.add_subplot(211)
-#ax1.plot(time,ZMP.zmp_x,linestyle='dashed',color = 'darkgreen',linewidth=2,label='ZMP_X')
-#ax1.hold(True)
-#ax1.grid(True)
-#ax1.plot(time2,COM.COM_X,color = 'red',linewidth=1,label='COM_X')
-#ax1.legend()      
-#
-#ax2 = fig.add_subplot(212)
-#ax2.plot(time,ZMP.zmp_y,linestyle='dashed',color = 'darkgreen',linewidth=2,label='ZMP_Y')
-#ax2.hold(True)
-#ax2.grid(True)
-#ax2.plot(time2,COM.COM_Y,color = 'red',linewidth=1,label='COM_Y')
-#ax2.legend()
-#
-#fig = plt.figure()
-#plt.plot(time,FT.LeftX)
-#plt.hold(True)
-#plt.grid(True)
-#plt.plot(time,FT.RightX)
-#
-#fig = plt.figure()
-#plt.plot(time,FT.LeftY)
-#plt.hold(True)
-#plt.grid(True)
-#plt.plot(time,FT.RightY)
-#
-#fig = plt.figure()
-#plt.plot(time,FT.LeftZ)
-#plt.hold(True)
-#plt.grid(True)
-#plt.plot(time,FT.RightZ)
+        self.right_foot_traj: List[Tuple[float, float, float]] = []
+        self.left_foot_traj: List[Tuple[float, float, float]] = []
+
+    def parabolic_z(self, t, T):
+        """Parabolic swing trajectory: peak at T/2."""
+        return 4 * self.foot_clearance * (t / T) * (1 - t / T)
+
+    def generate(self):
+        num_phases = len(self.support_steps) - 1
+        total_time = num_phases * self.step_time
+        num_samples = int(total_time / self.sampling_time)
+        
+
+        right_index = 0
+        left_index = 0
+
+        for i in range(num_samples):
+            current_time = i * self.sampling_time
+            phase_index = int(current_time // self.step_time)
+            phase_time = current_time % self.step_time
+
+            # Stop safely if we're out of bounds
+            if phase_index >= len(self.support_steps) - 1:
+                break
+
+            # Determine support foot
+            support = self.support_steps[phase_index]
+            is_right_support = support == self.right_foot_steps[right_index]
+
+            if is_right_support:
+                # Right is stance, left is swing
+                right = self.right_foot_steps[right_index]
+                next_left_index = left_index + 1
+
+                if next_left_index >= len(self.left_foot_steps):
+                    next_left_index = left_index  # no more swing
+
+                start = self.left_foot_steps[left_index]
+                end = self.left_foot_steps[next_left_index]
+
+                ratio = min(phase_time / self.step_time, 1.0)
+                x = start.x + ratio * (end.x - start.x)
+                y = start.y + ratio * (end.y - start.y)
+                z = self.parabolic_z(phase_time, self.step_time)
+
+                self.right_foot_traj.append((right.x, right.y, 0.0))
+                self.left_foot_traj.append((x, y, z))
+
+                if phase_time>0.9:
+                    pass                    
+                # if ratio >= 0.99 and next_left_index != left_index:
+                if phase_time >= self.step_time - self.sampling_time and next_left_index != left_index:
+                    left_index = next_left_index
+
+            else:
+                # Left is stance, right is swing
+                left = self.left_foot_steps[left_index]
+                next_right_index = right_index + 1
+
+                if next_right_index >= len(self.right_foot_steps):
+                    next_right_index = right_index  # no more swing
+
+                start = self.right_foot_steps[right_index]
+                end = self.right_foot_steps[next_right_index]
+
+                ratio = min(phase_time / self.step_time, 1.0)
+                x = start.x + ratio * (end.x - start.x)
+                y = start.y + ratio * (end.y - start.y)
+                z = self.parabolic_z(phase_time, self.step_time)
+
+                self.left_foot_traj.append((left.x, left.y, 0.0))
+                self.right_foot_traj.append((x, y, z))
+                if phase_time>0.9:
+                    pass     
+                # if ratio >= 0.99 and next_right_index != right_index:
+                if phase_time>= self.step_time-self.sampling_time and next_right_index != right_index:
+                    right_index = next_right_index
+
+    def get_trajectories(self):
+        return {
+            "right_foot": self.right_foot_traj,
+            "left_foot": self.left_foot_traj,
+        }
+
+    def plot(self):
+
+        rx, ry, rz = zip(*self.right_foot_traj)
+        lx, ly, lz = zip(*self.left_foot_traj)
+
+        fig, ax = plt.subplots(3, 1, figsize=(8, 12))
+        ax[0].plot(rx, 'r-', label='Right Foot Trajectory')
+        ax[0].plot(lx, 'r--', label='Left Foot Trajectory')
+        ax[1].plot(ry, 'g-', label='Right Foot Trajectory')
+        ax[1].plot(ly, 'g--', label='Left Foot Trajectory')
+        ax[2].plot(rz, 'b-', label='Right Foot Trajectory')
+        ax[2].plot(lz, 'b--', label='Left Foot Trajectory')
+        
+        ax[0].legend()
+        ax[1].legend()
+        ax[2].legend()
+        ax[0].grid()
+        ax[1].grid()
+        ax[2].grid()
+        
+        
+        
+        fig = plt.figure()
+        ax = fig.add_subplot(111, projection='3d')
+        ax.plot(rx, ry, rz, 'r-', label='Right Foot Trajectory')
+        ax.plot(lx, ly, lz, 'b-', label='Left Foot Trajectory')
+        ax.set_xlabel("X")
+        ax.set_ylabel("Y")
+        ax.set_zlabel("Z")
+        ax.set_title("3D Foot Trajectories")
+        ax.legend()
+        plt.show()

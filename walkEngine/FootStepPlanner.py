@@ -1,94 +1,80 @@
-
 import matplotlib.pyplot as plt
+from dataclasses import dataclass
+from typing import List, Tuple
+
+@dataclass
+class Foot:
+    x: float
+    y: float
+    z: float = 0.0  # default on the ground
 
 
 class FootStepPlanner:
-   
-    
+    def __init__(self, fr0: Tuple[float, float] = (0.15, 0.), fl0: Tuple[float, float] = (0., 0.1)):
+        self.initial_right = Foot(*fr0)
+        self.initial_left = Foot(*fl0)
 
-    def __init__(self,FR0X=0,FR0Y=0,FL0X=0,FL0Y=0.1,distance_between_feet=0.2):
-        self.FR0X = FR0X
-        self.FR0Y = FR0Y
-        self.FL0X = FL0X
-        self.FL0Y = FL0Y
-        self.distance_between_feet = distance_between_feet
-        self.support_pos_x  = []
-        self.support_pos_y  = []
-        self.right_foot_x =  []
-        self.right_foot_y =  []
+        self.right_foot_steps: List[Foot] = [self.initial_right]
+        self.left_foot_steps: List[Foot] = [self.initial_left]
+        self.support_positions: List[Foot] = []
+
+    def plan_steps(self, number_of_steps: int, step_x: float, step_y: float, first_step_is_right: bool):
+        right_is_support = not first_step_is_right
+        left_is_support = first_step_is_right
+
+        for i in range(number_of_steps):
+            if right_is_support:
+                self.support_positions.append(self.right_foot_steps[-1])
+                last_left = self.left_foot_steps[-1]
+                new_left = Foot(last_left.x + step_x, last_left.y + step_y)
+                self.left_foot_steps.append(new_left)
+                right_is_support = False
+                left_is_support = True
+            else:
+                self.support_positions.append(self.left_foot_steps[-1])
+                last_right = self.right_foot_steps[-1]
+                new_right = Foot(last_right.x + step_x, last_right.y + step_y)
+                self.right_foot_steps.append(new_right)
+                right_is_support = True
+                left_is_support = False
+
+        # Handle final double support phase
+        if right_is_support:
+            self.support_positions.append(self.right_foot_steps[-1])
+            last_left = self.left_foot_steps[-1]
+            final_left = Foot(last_left.x + step_x / 2, last_left.y + step_y / 2)
+            self.left_foot_steps.append(final_left)
+            self.support_positions.append(final_left)
+        elif left_is_support:
+            self.support_positions.append(self.left_foot_steps[-1])
+            last_right = self.right_foot_steps[-1]
+            final_right = Foot(last_right.x + step_x / 2, last_right.y + step_y / 2)
+            self.right_foot_steps.append(final_right)
+            self.support_positions.append(final_right)
+
+    def get_paths(self):
+        return {
+            "right_foot": [(f.x, f.y) for f in self.right_foot_steps],
+            "left_foot": [(f.x, f.y) for f in self.left_foot_steps],
+            "support": [(f.x, f.y) for f in self.support_positions],
+        }
+
+    def plot_steps(self):
+        paths = self.get_paths()
+        rx, ry = zip(*paths["right_foot"])
+        lx, ly = zip(*paths["left_foot"])
+        sx, sy = zip(*paths["support"])
         
-        self.left_foot_x =  []
-        self.left_foot_y =  []
-        
-
-    def plan_steps(self,number_of_step,step_x,step_y,first_step_is_right):
-        support_pos_X = []
-        support_pos_y = []
-
-        right_foot_x =  [self.FR0X]
-        right_foot_y =  [self.FR0Y]
-
-        left_foot_x =  [self.FL0X]
-        left_foot_y =  [self.FL0Y]
-
-        if (first_step_is_right):
-            right_is_support = 0       
-            left_is_support = 1        
-        else:
-            right_is_support = 1       
-            left_is_support = 0        
-        
-
-        for i in range(1,number_of_step+1):
-            if (right_is_support == 1):
-                    support_pos_X.append(right_foot_x[len(right_foot_x)-1])
-                    support_pos_y.append(right_foot_y[-1])
-                    left_foot_x.append(left_foot_x[len(left_foot_x)-1]+step_x)
-                    left_foot_y.append(left_foot_y[len(left_foot_y)-1]+step_y)    
-                    
-                    right_is_support = 0
-                    left_is_support = 1
-
-            elif (left_is_support == 1):
-                    #print LFootx[len(LFootx)-1]
-                    support_pos_X.append(left_foot_x[len(left_foot_x)-1])
-                    support_pos_y.append(left_foot_y[len(left_foot_y)-1])
-                    right_foot_x.append(right_foot_x[len(right_foot_x)-1]+step_x)
-                    right_foot_y.append(right_foot_y[len(right_foot_y)-1]+step_y)        
-
-                    right_is_support = 1
-                    left_is_support = 0
 
 
-        if (right_is_support == 1):
-                support_pos_X.append(right_foot_x[len(right_foot_x)-1])
-                support_pos_y.append(right_foot_y[len(right_foot_y)-1])    
-
-                left_foot_x.append(left_foot_x[len(left_foot_x)-1]+step_x/2)
-                left_foot_y.append(left_foot_y[len(left_foot_y)-1]+step_y/2)    
-
-                support_pos_X.append(left_foot_x[len(left_foot_x)-1])
-                support_pos_y.append(left_foot_y[len(left_foot_y)-1])
-                        
-                right_is_support = 1
-                left_is_support = 1
-
-        elif (left_is_support == 1):
-                support_pos_X.append(left_foot_x[len(left_foot_x)-1])
-                support_pos_y.append(left_foot_x[len(left_foot_x)-1])
-                right_foot_x.append(right_foot_x[len(right_foot_x)-1]+step_x/2)
-                right_foot_y.append(right_foot_y[len(right_foot_y)-1]+step_y/2)        
-                
-                support_pos_X.append( right_foot_x[len(right_foot_x)-1])
-                support_pos_y.append(right_foot_y[len(right_foot_y)-1])   
-
-                right_is_support = 1
-                left_is_support = 1
-                
-        self.support_pos_x = support_pos_X
-        self.support_pos_y = support_pos_y
-        self.right_foot_x =  right_foot_x
-        self.right_foot_y =  right_foot_y    
-        self.left_foot_x =  left_foot_x
-        self.left_foot_y =  left_foot_y
+        plt.plot(rx, ry, 'ro-', label='Right Foot')
+        plt.plot(lx, ly, 'bo-', label='Left Foot')
+        plt.plot(sx, sy, 'go--', label='Support')
+        plt.legend()
+        plt.xlabel("X")
+        plt.ylabel("Y")
+        plt.title("Footstep Plan")
+        plt.grid(True)
+        plt.axis("equal")
+        plt.show()
 

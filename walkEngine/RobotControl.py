@@ -18,13 +18,31 @@ class RobotControl():
         
         p.setGravity(0,0,-9.81)
         p.setAdditionalSearchPath(pd.getDataPath())
-        self.sampling_time = 0.005
+        self.sampling_time = 1/240.0
         p.setTimeStep(self.sampling_time)
         
         self.FloorId = p.loadURDF("plane.urdf",[0,0,0])
         p.setAdditionalSearchPath("")
         
         self.Coman_ID = p.loadURDF("models/coman/model_org.urdf",[0,0,0.5])
+        
+        num_joints = p.getNumJoints(self.Coman_ID)
+        link_names = {}
+
+        for i in range(num_joints):
+            joint_info = p.getJointInfo(self.Coman_ID, i)
+            link_name = joint_info[12].decode('utf-8')
+            link_names[i] = link_name
+            print(f"Link Index: {i}, Link Name: {link_name}")
+
+        target_link_index = [40, 54]  # change this to the link you want
+        for link_id in target_link_index:
+            p.changeDynamics(self.Coman_ID, link_id, lateralFriction=10)
+            p.changeVisualShape(self.Coman_ID, link_id,rgbaColor=(0.3,0.5,0.5,1))
+        
+
+
+        
         
         WaistX_DOF = 3
         WaistY_DOF = 2

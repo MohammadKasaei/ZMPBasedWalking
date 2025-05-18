@@ -1,94 +1,125 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Mon Jun 22 14:51:52 2020
-
-@author: mohammad
-"""
-
+from .FootStepPlanner import Foot
 import matplotlib.pyplot as plt
-import numpy
-import math
+from dataclasses import dataclass
+from typing import List, Tuple
+import numpy as np
 
 
 class COMGenerator:
-  
     def __init__(self):
-        self.com_x = []
-        self.com_y = []
-        self.com_z = []
-        
-        
-    def generate(self,com_x0,com_y0,support_pos_x,support_pos_y,zmp_x,zmp_y,step_time,sampling_time,number_of_step,DS_ratio,com_height_amp,z_0):
-            DS_time = (DS_ratio * step_time)
-           
-            com_x = []
-            com_y = []
-            com_z = []
-            
-            
-            gravity = 9.81
-            
-            z_c = z_0
-            ddot_zc = 0
-            a = (gravity + ddot_zc) / z_c
-            w = math.sqrt(a)
-            
-            i=0
-            
-            A = com_height_amp
-            
-            for GlobalTime in numpy.arange(0,step_time*(number_of_step-1),sampling_time):
-                t=GlobalTime
-                com_z.append(z_c)
-                w = math.sqrt(z_c/(gravity))
-                   
-                #%%%%%%%%%%%%%%%%%% Search for Initial Condition
-                k = number_of_step+1
-                while( k>0):    
-                    if (t <= (k*step_time) - DS_time/2 and t >= ((k-1)*step_time) -DS_time/2):
-                        break
-                    k=k-1
-                #print("k is :"+ str(k)+"\n")
-                #%*****************************************************************************************************
-                if(k>1):
-                    t0=(k-1)*step_time - DS_time/2
-                    tf=k*step_time - DS_time/2
-                else:
-                    t0=0
-                    tf=k*step_time - DS_time/2    
-                
-                #%*****************************************************************************************************
-                z=zmp_y[i]
-                if (i<len(zmp_y)):
-                    i=i+1;           
-                
-                if (t0==0):
-                 y0 = com_y0
-                 yf = (support_pos_y[k-1] + support_pos_y[k])/ 2           
-                else:
-                 y0 = (support_pos_y[k-2] + support_pos_y[k-1])/ 2                   
-                 yf = (support_pos_y[k-1] + support_pos_y[k])/ 2                   
+        self.com_x: List[float] = []
+        self.com_y: List[float] = []
+        self.com_z: List[float] = []
 
-                y = z + (1/math.sinh((t0 - tf)/w))*((yf - z)*math.sinh((t0 - t)/w) + (-y0 + z)*math.sinh((tf - t)/w))
-                com_y.append(y)
-            
-                #%*****************************************************************************************************
-                z=zmp_x[i]
-            
-                if (t0==0):
-                     x0 = com_x0
-                     xf = (support_pos_x[k-1] + support_pos_x[k])/ 2                     
-                else:
-                     x0 = (support_pos_x[k-2] + support_pos_x[k-1])/ 2                   
-                     xf = (support_pos_x[k-1] + support_pos_x[k])/ 2                 
-                
-            
-                x = z + (1/math.sinh((t0 - tf)/w))*((xf - z)*math.sinh((t0 - t)/w) + (-x0 + z)*math.sinh((tf - t)/w))
-                com_x.append(x);    
-            
-            self.com_x = com_x
-            self.com_y = com_y
-            self.com_z = com_z
-    
-    
+    def generate(
+        self,
+        com_x0: float,
+        com_y0: float,
+        support_pos_x: List[float],
+        support_pos_y: List[float],
+        zmp_x: List[float],
+        zmp_y: List[float],
+        step_time: float,
+        sampling_time: float,
+        number_of_steps: int,
+        ds_ratio: float,
+        com_height_amp: float,
+        z_0: float,
+    ):
+        gravity = 9.81
+        ds_time = ds_ratio * step_time
+        self.zmp_x =zmp_x
+        self.zmp_y =zmp_y   
+
+        com_x = []
+        com_y = []
+        com_z = []
+
+        z_c = z_0
+        ddot_zc = 0.0
+        a = (gravity + ddot_zc) / z_c
+        w = np.sqrt(a)
+
+        zmp_index = 0
+        total_time = step_time * (number_of_steps - 1)
+
+        for global_time in np.arange(0, total_time, sampling_time):
+            t = global_time
+            com_z.append(z_c)
+            w = np.sqrt(z_c / gravity)  # Matching original line
+
+            # --- Determine step interval (k) where current time falls
+            k = number_of_steps + 1
+            while k > 0:
+                t0 = (k - 1) * step_time - ds_time / 2
+                tf = k * step_time - ds_time / 2
+                if t0 <= t <= tf:
+                    break
+                k -= 1
+
+            if k > 1:
+                t0 = (k - 1) * step_time - ds_time / 2
+                tf = k * step_time - ds_time / 2
+            else:
+                t0 = 0.0
+                tf = k * step_time - ds_time / 2
+
+            # ---------------- Y DIRECTION ----------------
+            z_y = zmp_y[min(zmp_index, len(zmp_y) - 1)]
+            if zmp_index < len(zmp_y):
+                zmp_index += 1
+
+            if t0 == 0:
+                y0 = com_y0
+                yf = (support_pos_y[k - 1] + support_pos_y[k]) / 2
+            else:
+                y0 = (support_pos_y[k - 2] + support_pos_y[k - 1]) / 2
+                yf = (support_pos_y[k - 1] + support_pos_y[k]) / 2
+
+            denom = np.sinh((t0 - tf) / w)
+            if abs(denom) < 1e-6:
+                denom = 1e-6  # avoid division by zero
+
+            y = z_y + (1 / denom) * (
+                (yf - z_y) * np.sinh((t0 - t) / w)
+                + (z_y - y0) * np.sinh((tf - t) / w)
+            )
+            com_y.append(y)
+
+            # ---------------- X DIRECTION ----------------
+            z_x = zmp_x[min(zmp_index, len(zmp_x) - 1)]
+
+            if t0 == 0:
+                x0 = com_x0
+                xf = (support_pos_x[k - 1] + support_pos_x[k]) / 2
+            else:
+                x0 = (support_pos_x[k - 2] + support_pos_x[k - 1]) / 2
+                xf = (support_pos_x[k - 1] + support_pos_x[k]) / 2
+
+            x = z_x + (1 / denom) * (
+                (xf - z_x) * np.sinh((t0 - t) / w)
+                + (z_x - x0) * np.sinh((tf - t) / w)
+            )
+            com_x.append(x)
+
+        self.com_x = com_x
+        self.com_y = com_y
+        self.com_z = com_z
+
+    def get_trajectory(self):
+        return {
+            "com_x": self.com_x,
+            "com_y": self.com_y,
+            "com_z": self.com_z,
+        }
+    def plot(self):            
+        plt.plot(self.com_x, self.com_y,'g', label="COM Trajectory")
+        plt.plot(self.zmp_x, self.zmp_y, 'r--', label="ZMP Trajectory")
+        plt.legend()
+        plt.xlabel("X")
+        plt.ylabel("Y")
+        plt.title("COM and ZMP Trajectory")
+        plt.axis("equal")
+        plt.grid(True)
+        plt.show()
+        
