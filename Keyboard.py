@@ -8,7 +8,7 @@ class keyboardMonitoring():
                 
         self.MAX_STEP_X      = 0.15
         self.MAX_STEP_Y      = 0.1
-        self.MAX_STEP_Theta  = 30
+        self.MAX_STEP_Theta  = 15
         self.MAX_STEP_TIME   = 0.5
         self.MIN_STEP_TIME   = 0.1
         

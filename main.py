@@ -12,25 +12,34 @@ keyboard_monitoring = keyboardMonitoring()
 keyboard_monitoring.start()
 
 
-sampling_time= robot_control.sampling_time
-foot_heel_toe=0
+sampling_time = robot_control.sampling_time
 distance_between_feet = 0.1
-z_leg = 0.38
+z_leg = 0.4
 number_of_step = 5
-step_time = 0.33
+step_time = 0.5
+new_step_time = step_time
 
-step_x = 0.01
+step_x = 0.0
 step_y =0.0
-step_z = 0.04
+step_z = 0.035
 step_theta = 0.
 
-stop_for_one_step =  1
-new_step_time = step_time
-first_step_is_right = 0
+stop =  1
+
+
+t0 = 0
+t_walk0 = 0
+t_walk =0
+g_time = 0
+
+Startpush = 0
+arms_joint_pos = []
+
+first_step_is_right = False
 
 
 if (step_y<0.001 or step_theta>0.01):
-    first_step_is_right = 1
+    first_step_is_right = True
 
 if (first_step_is_right):
     FR0X,FR0Y  = step_x/2, -distance_between_feet/2
@@ -47,17 +56,7 @@ walking = GenerateWalkingTrajectories(FR0X,FR0Y,FL0X,FL0Y,
                                       first_step_is_right,
                                       distance_between_feet=distance_between_feet,
                                       z_leg = z_leg,z_offset=0.0)
-walking.generate()
 
-
-t0 = 0
-t_walk0 = 0
-t_walk =0
-g_time = 0
-
-
-Startpush = 0
-arms_joint_pos = []
 
 while (not keyboard_monitoring.exit):       
 
@@ -72,28 +71,28 @@ while (not keyboard_monitoring.exit):
         step_time = (0.8*step_time) + (0.2*keyboard_monitoring.new_step_time)
         
         if (keyboard_monitoring.stop == 1):
-            stop_for_one_step = 1
+            stop = 1
             
         elif(keyboard_monitoring.stop == 100): # reset
             p.resetSimulation()
             robot_control.init_robot()
             arms_joint_pos = []
 
-            stop_for_one_step = 1
+            stop = 1
             keyboard_monitoring.stop = 1
         else:
-            stop_for_one_step = 0
+            stop = 0
 
         step_x_rotated = step_x * math.cos(math.radians(step_theta)) - step_y * math.sin(math.radians(step_theta))
         step_y_rotated = step_x * math.sin(math.radians(step_theta)) + step_y * math.cos(math.radians(step_theta))
 
         if (step_y_rotated<0 or step_theta>0):
             if (first_step_is_right==0): # robot should stop
-                stop_for_one_step =1
+                stop =1
             first_step_is_right = 1
         else:
             if (first_step_is_right==1): # robot should stop
-                stop_for_one_step =1
+                stop =1
             first_step_is_right = 0
         
         if (first_step_is_right):
@@ -119,7 +118,7 @@ while (not keyboard_monitoring.exit):
         t_walk = g_time - t_walk0
         idx = int(round(t_walk/sampling_time))
         
-        if (stop_for_one_step == 1):
+        if (stop == 1):
             
             right_foot_pos = [0, 0, robot_control.z_leg, 0]
             left_foot_pos = [0, 0, robot_control.z_leg, 0]
@@ -128,7 +127,7 @@ while (not keyboard_monitoring.exit):
             
         elif (idx >= 0 and idx < len(walking.left_leg_x)):
             
-            arm_amp = math.radians(0)
+            arm_amp = math.radians(5)
             arm_offset = 20 
             arms_joint_pos,right_theta,left_theta = robot_control.generate_arm_motions(first_step_is_right,
                                                                 arm_amp,arm_offset,

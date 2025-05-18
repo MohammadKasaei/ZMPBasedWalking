@@ -15,12 +15,6 @@ from walkEngine.ZMPGenerator import ZMPGenerator as ZG
 from walkEngine.COMGenerator import COMGenerator as CG
 from walkEngine.FeetGenerator import FootPositionGenerator as FG
 
-# from FootStepPlanner as FP
-# from test2 import ZMPGenerator as ZG
-# from test2 import COMGenerator as CG
-# from test2 import FootPositionGenerator as FG
-# from test2 import Foot
-
 class GenerateWalkingTrajectories:
    
     def __init__(
@@ -90,7 +84,7 @@ class GenerateWalkingTrajectories:
         self.number_of_step = num_steps
         self.distance_between_feet = distance_between_feet
         self.com_height_amp = com_height_amp
-        self.z0 = 0.5
+        self.z0 = 0.35
         self.z_leg = z_leg + z_offset
 
         # Double and single support times

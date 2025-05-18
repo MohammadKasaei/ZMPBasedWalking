@@ -20,6 +20,7 @@ This project implements a real-time bipedal walking engine for a humanoid robot 
 
 ```
 ├── main.py                       # Entry script for walking simulation
+├── test_modules.py               # Testing the walking trajectory generators 
 ├── walkEngine/
 │   ├── GenrateWalkingTrajectories.py  # Trajectory generation module
 │   └── RobotControl.py                # Kinematics, control, balance

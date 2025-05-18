@@ -261,8 +261,8 @@ class RobotControl():
 
     def balance_control(self,ori,CoP_L,CoP_R):
         
-        PD_Wx = 1*self.PD_control(-ori[1], (ori[1]-self.orip[1])/self.sampling_time, 0.7, -0.05, [0.3,-0.3])
-        PD_Wy = 1*self.PD_control(-ori[0], (ori[0]-self.orip[0])/self.sampling_time, 0.5, 0.0, [0.05,-0.05])
+        PD_Wx = 1*self.PD_control(-ori[1], (ori[1]-self.orip[1])/self.sampling_time, 2, -0.0, [0.3,-0.3])
+        PD_Wy = 1*self.PD_control(ori[0], (ori[0]-self.orip[0])/self.sampling_time, 1., 0.02, [0.08,-0.08])
 
         PD_ALx = 1*self.PD_control(-CoP_L[1], 0, 0.35, 0 , [0.15,-0.15])
         PD_ARx = 1*self.PD_control(-CoP_R[1], 0, 0.35, 0 , [0.15,-0.15])
