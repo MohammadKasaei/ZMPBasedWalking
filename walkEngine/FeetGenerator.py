@@ -57,10 +57,7 @@ class FootPositionGenerator:
 
                 self.right_foot_traj.append((right.x, right.y, 0.0))
                 self.left_foot_traj.append((x, y, z))
-
-                if phase_time>0.9:
-                    pass                    
-                # if ratio >= 0.99 and next_left_index != left_index:
+                
                 if phase_time >= self.step_time - self.sampling_time and next_left_index != left_index:
                     left_index = next_left_index
 
@@ -82,9 +79,7 @@ class FootPositionGenerator:
 
                 self.left_foot_traj.append((left.x, left.y, 0.0))
                 self.right_foot_traj.append((x, y, z))
-                if phase_time>0.9:
-                    pass     
-                # if ratio >= 0.99 and next_right_index != right_index:
+
                 if phase_time>= self.step_time-self.sampling_time and next_right_index != right_index:
                     right_index = next_right_index
 
@@ -126,3 +121,5 @@ class FootPositionGenerator:
         ax.set_title("3D Foot Trajectories")
         ax.legend()
         plt.show()
+        
+        

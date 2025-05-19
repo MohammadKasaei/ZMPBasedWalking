@@ -7,6 +7,10 @@ This project implements a real-time bipedal walking engine for a humanoid robot 
   <img src="imgs/video.gif" alt="Image description" width="800">
 </div>
 
+<div align="center">
+  <img src="imgs/plots.png" alt="Image description" width="800">
+</div>
+
 ## Features
 
 - Realistic walking pattern generation using step parameters
