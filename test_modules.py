@@ -61,7 +61,6 @@ if __name__ == "__main__":
         foot_clearance=0.05
     )
     foot_gen.generate()
-    # foot_gen.plot()
     
     rx, ry, rz = zip(*foot_gen.right_foot_traj)
     lx, ly, lz = zip(*foot_gen.left_foot_traj)
@@ -75,7 +74,6 @@ if __name__ == "__main__":
     ax[0].plot(t, zmp_gen.zmp_x[:tf], 'm-', label='ZMP - X')
     ax[0].plot(t, com_gen.com_x[:tf], 'c-', label='COM - X')
     ax[0].set_ylabel("X [m]")
-    # ax[0].set_ylabel("Time [s]")
     
     
     ax[1].plot(t, ry[:tf], 'g-', label='Right Foot Trajectory')
@@ -83,12 +81,10 @@ if __name__ == "__main__":
     ax[1].plot(t, zmp_gen.zmp_y[:tf], 'c-', label='ZMP-Y')
     ax[1].plot(t, com_gen.com_y[:tf], 'm-', label='COM - Y')
     ax[1].set_ylabel("Y [m]")
-    # ax[1].set_xlabel("Time [s]")
     
     ax[2].plot(t, rz[:tf], 'b-', label='Right Foot Trajectory')
     ax[2].plot(t, lz[:tf], 'b--', label='Left Foot Trajectory')
     ax[2].set_ylabel("Z [m]")
-    # ax[3].set_ylabel("Y [m]")
     
     ax[3].plot(rx,ry, 'b-', label='Right Foot Trajectory')
     ax[3].plot(lx,ly, 'r-', label='Left Foot Trajectory')
