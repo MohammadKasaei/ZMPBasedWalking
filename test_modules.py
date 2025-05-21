@@ -10,7 +10,7 @@ from walkEngine.FootStepPlanner import FootStepPlanner
 from walkEngine.ZMPGenerator import ZMPGenerator 
 from walkEngine.COMGenerator import COMGenerator 
 from walkEngine.FeetGenerator import FootPositionGenerator 
-
+from walkEngine.DCMGenerator import DCMGenerator
 
 if __name__ == "__main__":
 
@@ -46,6 +46,10 @@ if __name__ == "__main__":
         com_height_amp=0.0, z_0=0.8
     )
     com_gen.plot()
+    
+    dcm_gen = DCMGenerator(z_0=0.8, dt=0.005)
+    dcm_x, dcm_y = dcm_gen.generate(com_gen.com_x,com_gen.com_y)
+    
 
     paths = planner.get_paths()
     right = [Foot(x, y, 0.0) for x, y in paths["right_foot"]]
@@ -73,6 +77,7 @@ if __name__ == "__main__":
     ax[0].plot(t, lx[:tf], 'r--', label='Left Foot Trajectory')
     ax[0].plot(t, zmp_gen.zmp_x[:tf], 'm-', label='ZMP - X')
     ax[0].plot(t, com_gen.com_x[:tf], 'c-', label='COM - X')
+    ax[0].plot(t, dcm_x[:tf], 'k--', label='DCM - X')
     ax[0].set_ylabel("X [m]")
     
     
@@ -80,10 +85,11 @@ if __name__ == "__main__":
     ax[1].plot(t, ly[:tf], 'g--', label='Left Foot Trajectory')
     ax[1].plot(t, zmp_gen.zmp_y[:tf], 'c-', label='ZMP-Y')
     ax[1].plot(t, com_gen.com_y[:tf], 'm-', label='COM - Y')
+    ax[1].plot(t, dcm_y[:tf], 'y--', label='DCM - Y')
     ax[1].set_ylabel("Y [m]")
     
     ax[2].plot(t, rz[:tf], 'b-', label='Right Foot Trajectory')
-    ax[2].plot(t, lz[:tf], 'b--', label='Left Foot Trajectory')
+    ax[2].plot(t, lz[:tf], 'r-', label='Left Foot Trajectory')
     ax[2].set_ylabel("Z [m]")
     
     ax[3].plot(rx,ry, 'b-', label='Right Foot Trajectory')
