@@ -280,10 +280,13 @@ class RobotControl():
         self.orip = self.ori
         
         posAndori = p.getBasePositionAndOrientation(self.Coman_ID)
+        self.linearVel, self.angualrVel = p.getBaseVelocity(self.Coman_ID)
+        
         self.pos = posAndori[0]
         self.ori = p.getEulerFromQuaternion(posAndori[1])
-        posp = self.pos
-        orip = self.ori
+        self.posp = self.pos
+        self.orip = self.ori
+        
         ########################## Update ZMP
         joint_state_left = p.getJointState(self.Coman_ID,42)
         joint_state_right = p.getJointState(self.Coman_ID,56)
